@@ -136,6 +136,7 @@
         if (!block.trim().match(/^BEGIN:VCARD/i)) continue;
         const lines = block.split(/\r?\n/);
         let fn = '', nName = '';
+        let sortString = '', phoneticLast = '', phoneticFirst = '';
         const phones = [], emails = [];
 
         for (const line of lines) {
@@ -155,12 +156,21 @@
           } else if (upperLine.startsWith('EMAIL')) {
             const m = line.match(/^EMAIL[^:]*:(.*)/i);
             if (m && m[1].trim()) emails.push(m[1].trim());
+          } else if (upperLine.startsWith('SORT-STRING')) {
+            const m = line.match(/^SORT-STRING[^:]*:(.*)/i);
+            if (m) sortString = m[1].trim();
+          } else if (upperLine.startsWith('X-PHONETIC-LAST-NAME')) {
+            const m = line.match(/^X-PHONETIC-LAST-NAME[^:]*:(.*)/i);
+            if (m) phoneticLast = m[1].trim();
+          } else if (upperLine.startsWith('X-PHONETIC-FIRST-NAME')) {
+            const m = line.match(/^X-PHONETIC-FIRST-NAME[^:]*:(.*)/i);
+            if (m) phoneticFirst = m[1].trim();
           }
         }
 
         const name = fn || nName || '';
         if (name || phones.length || emails.length) {
-          contacts.push({ name: name || '(名前なし)', phones, emails });
+          contacts.push({ name: name || '(名前なし)', phones, emails, sortString, phoneticLast, phoneticFirst });
         }
       }
       return contacts;
@@ -172,6 +182,9 @@
         name: c.name.trim(),
         phones: c.phones.map(p => normalizePhone(p)),
         emails: [...c.emails],
+        sortString: c.sortString || '',
+        phoneticLast: c.phoneticLast || '',
+        phoneticFirst: c.phoneticFirst || '',
       }));
 
       contacts.forEach(c => {
@@ -197,8 +210,15 @@
             const lo = e.toLowerCase();
             if (!ex.emails.some(ee => ee.toLowerCase() === lo)) ex.emails.push(e);
           }
+          // フリガナを保持（既存にない場合のみ補完）
+          if (!ex.sortString && c.sortString) ex.sortString = c.sortString;
+          if (!ex.phoneticLast && c.phoneticLast) ex.phoneticLast = c.phoneticLast;
+          if (!ex.phoneticFirst && c.phoneticFirst) ex.phoneticFirst = c.phoneticFirst;
         } else {
-          map.set(key, { name: c.name, phones: [...c.phones], emails: [...c.emails] });
+          map.set(key, {
+            name: c.name, phones: [...c.phones], emails: [...c.emails],
+            sortString: c.sortString, phoneticLast: c.phoneticLast, phoneticFirst: c.phoneticFirst,
+          });
         }
       }
 
@@ -220,6 +240,14 @@
           out += 'N:' + parts[0] + ';' + parts.slice(1).join(' ') + ';;;\r\n';
         } else {
           out += 'N:' + c.name + ';;;;\r\n';
+        }
+        // フリガナ（ヨミガナ）フィールドを保持
+        if (c.phoneticLast || c.phoneticFirst) {
+          out += 'X-PHONETIC-LAST-NAME:' + (c.phoneticLast || '') + '\r\n';
+          out += 'X-PHONETIC-FIRST-NAME:' + (c.phoneticFirst || '') + '\r\n';
+        }
+        if (c.sortString) {
+          out += 'SORT-STRING:' + c.sortString + '\r\n';
         }
         for (const p of c.phones) out += 'TEL;TYPE=CELL:' + p + '\r\n';
         for (const e of c.emails) out += 'EMAIL;TYPE=INTERNET:' + e + '\r\n';
@@ -297,7 +325,7 @@
 
             {/* Feature pills */}
             <div className="flex flex-wrap justify-center gap-2 mb-8">
-              {['重複を統合','番号を統一','ワンタップ'].map((t, i) => (
+              {['重複を統合','番号を統一','フリガナ保持'].map((t, i) => (
                 <span key={i} className="text-[11px] font-bold text-slate-600 bg-slate-100 rounded-full px-3 py-1.5 tracking-wide">
                   {t}
                 </span>
@@ -306,30 +334,40 @@
 
             {/* Action buttons */}
             <div className="space-y-3">
-              {hasContactPicker && (
-                <PrimaryButton id="btn-contact-picker" onClick={onPickContacts}>
-                  <IconSmartphone size={20} />
-                  アドレス帳から選択して整理
-                </PrimaryButton>
-              )}
-              <div onClick={onFileClick}>
-                {hasContactPicker ? (
-                  <SecondaryButton id="btn-vcf-upload">
-                    <IconFile size={20} />
-                    VCFファイルから整理
-                  </SecondaryButton>
-                ) : (
-                  <PrimaryButton id="btn-vcf-upload-primary">
+              {/* VCF一括処理（推奨） */}
+              <div>
+                <div onClick={onFileClick}>
+                  <PrimaryButton id={hasContactPicker ? "btn-vcf-upload" : "btn-vcf-upload-primary"}>
                     <IconUpload size={20} />
-                    VCFファイルを選択して整理
+                    VCFファイルで全件一括処理
                   </PrimaryButton>
-                )}
+                </div>
               </div>
+
+              {/* Contact Picker（選択式） */}
+              {hasContactPicker && (
+                <button id="btn-contact-picker" onClick={onPickContacts}
+                  className="w-full bg-white hover:bg-slate-50 text-slate-700 font-bold border border-slate-200 rounded-2xl py-4 px-6 flex items-center justify-center gap-3 text-[15px] transition-all hover:border-slate-300 active:bg-slate-100">
+                  <IconSmartphone size={20} />
+                  連絡先を選んで整理
+                </button>
+              )}
+            </div>
+
+            {/* 全件エクスポートガイド */}
+            <div className="mt-5 bg-amber-50 border border-amber-100 rounded-2xl p-4">
+              <p className="text-[12px] font-bold text-amber-800 mb-2">📱 全件を一括処理する方法</p>
+              <ol className="text-[11.5px] text-amber-700 font-medium space-y-1 list-decimal list-inside leading-relaxed">
+                <li>Androidの「連絡先」アプリを開く</li>
+                <li>右上メニュー →「エクスポート」を選択</li>
+                <li>VCF形式で保存する</li>
+                <li>上の「VCFファイルで全件一括処理」で読み込む</li>
+              </ol>
             </div>
 
             {hasContactPicker && (
-              <p className="text-slate-400 text-xs text-center mt-6 font-medium">
-                Contact Picker API に対応しています
+              <p className="text-slate-400 text-[11px] text-center mt-4 font-medium">
+                ※ 連絡先を選ぶ場合、端末によっては複数選択できない場合があります
               </p>
             )}
           </Card>
