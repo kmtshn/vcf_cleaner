@@ -165,10 +165,24 @@
           } else if (upperLine.startsWith('X-PHONETIC-FIRST-NAME')) {
             const m = line.match(/^X-PHONETIC-FIRST-NAME[^:]*:(.*)/i);
             if (m) phoneticFirst = m[1].trim();
+          } else if (upperLine.startsWith('SOUND') && upperLine.includes('X-IRMC-N')) {
+            const m = line.match(/^SOUND[^:]*:(.*)/i);
+            if (m) {
+              const parts = m[1].trim().split(';');
+              if (!phoneticLast) phoneticLast = parts[0] || '';
+              if (!phoneticFirst) phoneticFirst = parts[1] || '';
+            }
           }
         }
 
         const name = fn || nName || '';
+        
+        if (!phoneticLast && !phoneticFirst && sortString) {
+          const parts = sortString.split(/[\s　]+/);
+          phoneticLast = parts[0] || '';
+          phoneticFirst = parts[1] || '';
+        }
+        
         if (name || phones.length || emails.length) {
           contacts.push({ name: name || '(名前なし)', phones, emails, sortString, phoneticLast, phoneticFirst });
         }
@@ -245,9 +259,12 @@
         if (c.phoneticLast || c.phoneticFirst) {
           out += 'X-PHONETIC-LAST-NAME:' + (c.phoneticLast || '') + '\r\n';
           out += 'X-PHONETIC-FIRST-NAME:' + (c.phoneticFirst || '') + '\r\n';
+          out += 'SOUND;X-IRMC-N:' + (c.phoneticLast || '') + ';' + (c.phoneticFirst || '') + ';;;\r\n';
         }
-        if (c.sortString) {
-          out += 'SORT-STRING:' + c.sortString + '\r\n';
+        
+        const sortStr = c.sortString || [c.phoneticLast, c.phoneticFirst].filter(Boolean).join(' ');
+        if (sortStr) {
+          out += 'SORT-STRING:' + sortStr + '\r\n';
         }
         for (const p of c.phones) out += 'TEL;TYPE=CELL:' + p + '\r\n';
         for (const e of c.emails) out += 'EMAIL;TYPE=INTERNET:' + e + '\r\n';
