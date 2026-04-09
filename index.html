@@ -5,21 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>連絡先クリーナー – アドレス帳を自動整理</title>
   <meta name="description" content="スマホのアドレス帳を自動整理。重複や表記ゆれを解消し、きれいなVCFファイルとしてエクスポート。">
-  <meta name="theme-color" content="#6366f1">
+  <meta name="theme-color" content="#F8F9FA">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon-512.png" type="image/png">
   <link rel="apple-touch-icon" href="icon-512.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: { sans: ['"Noto Sans JP"', 'sans-serif'] }
+          fontFamily: { sans: ['"LINE Seed JP"', 'sans-serif'] }
         }
       }
     };
@@ -27,30 +25,60 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
   <style>
+    /* LINE Seed JP Web Font */
+    @font-face {
+      font-family: 'LINE Seed JP';
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+      src: url('https://cdn.jsdelivr.net/gh/line/line-seed@master/line-seed-jp/fonts/woff2/LINESeedJP_OTF_Rg.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'LINE Seed JP';
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+      src: url('https://cdn.jsdelivr.net/gh/line/line-seed@master/line-seed-jp/fonts/woff2/LINESeedJP_OTF_Bd.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'LINE Seed JP';
+      font-weight: 800;
+      font-style: normal;
+      font-display: swap;
+      src: url('https://cdn.jsdelivr.net/gh/line/line-seed@master/line-seed-jp/fonts/woff2/LINESeedJP_OTF_Eb.woff2') format('woff2');
+    }
+
     *, *::before, *::after { box-sizing: border-box; }
-    body { margin: 0; font-family: 'Noto Sans JP', sans-serif; -webkit-font-smoothing: antialiased; }
+    body { 
+      margin: 0; 
+      font-family: 'LINE Seed JP', sans-serif; 
+      -webkit-font-smoothing: antialiased;
+      background-color: #F8F9FA;
+      color: #0f172a;
+      letter-spacing: 0.02em;
+    }
+
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes bounceIn { 0% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.15); } 100% { transform: scale(1); opacity: 1; } }
     @keyframes spinSmooth { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    @keyframes pulse2 { 0%,100% { opacity: .6; } 50% { opacity: 1; } }
     @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
     @keyframes confetti1 { 0% { transform: translate(0,0) rotate(0deg) scale(1); opacity:1; } 100% { transform: translate(-40px,-80px) rotate(200deg) scale(0); opacity:0; } }
     @keyframes confetti2 { 0% { transform: translate(0,0) rotate(0deg) scale(1); opacity:1; } 100% { transform: translate(50px,-70px) rotate(-180deg) scale(0); opacity:0; } }
     @keyframes confetti3 { 0% { transform: translate(0,0) rotate(0deg) scale(1); opacity:1; } 100% { transform: translate(-30px,-90px) rotate(160deg) scale(0); opacity:0; } }
     @keyframes confetti4 { 0% { transform: translate(0,0) rotate(0deg) scale(1); opacity:1; } 100% { transform: translate(60px,-60px) rotate(-220deg) scale(0); opacity:0; } }
+    
     .anim-fade-in-up { animation: fadeInUp .6s cubic-bezier(.22,1,.36,1) forwards; }
     .anim-bounce-in { animation: bounceIn .5s cubic-bezier(.22,1,.36,1) forwards; }
     .anim-spin { animation: spinSmooth 1.2s linear infinite; }
-    .anim-pulse2 { animation: pulse2 2s ease-in-out infinite; }
-    .delay-100 { animation-delay: .1s; }
-    .delay-200 { animation-delay: .2s; }
     .delay-300 { animation-delay: .3s; }
-    .glass { background: rgba(255,255,255,.04); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,.08); }
-    .btn-gradient { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%); background-size: 200% 200%; transition: all .3s ease; }
-    .btn-gradient:hover { background-position: 100% 100%; box-shadow: 0 8px 32px rgba(99,102,241,.4); transform: translateY(-1px); }
-    .btn-gradient:active { transform: translateY(0); }
-    .shimmer-bar { background: linear-gradient(90deg, rgba(255,255,255,.03) 25%, rgba(255,255,255,.08) 50%, rgba(255,255,255,.03) 75%); background-size: 200% 100%; animation: shimmer 1.8s infinite; }
+    
+    .shimmer-bar-light { 
+      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); 
+      background-size: 200% 100%; 
+      animation: shimmer 1.8s infinite; 
+    }
   </style>
 </head>
 <body>
@@ -58,7 +86,7 @@
   <script type="text/babel">
     const { useState, useEffect, useCallback, useRef } = React;
 
-    /* ========== SVG Icon Components (Lucide-style) ========== */
+    /* ========== SVG Icon Components ========== */
     const I = ({ d, children, size = 24, className = '', ...p }) => (
       <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24"
         fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
@@ -75,7 +103,6 @@
     const IconLoader = (p) => <I {...p}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></I>;
     const IconDownload = (p) => <I {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></I>;
     const IconRefresh = (p) => <I {...p}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></I>;
-    const IconPlus = (p) => <I {...p}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></I>;
     const IconFile = (p) => <I {...p}><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></I>;
 
     /* ========== Phone Number Utilities ========== */
@@ -90,17 +117,11 @@
     function formatPhone(raw) {
       const d = digitsOnly(normalizePhone(raw));
       if (!d) return raw;
-      // Mobile 070/080/090/050 → 3-4-4
       if (/^0[5789]0/.test(d) && d.length === 11) return d.slice(0,3)+'-'+d.slice(3,7)+'-'+d.slice(7);
-      // Toll-free 0120 → 4-3-3
       if (/^0120/.test(d) && d.length === 10) return d.slice(0,4)+'-'+d.slice(4,7)+'-'+d.slice(7);
-      // Toll-free 0800 → 4-4-3
       if (/^0800/.test(d) && d.length === 11) return d.slice(0,4)+'-'+d.slice(4,8)+'-'+d.slice(8);
-      // 2-digit area code (03,06) → 2-4-4
       if (/^0[36]/.test(d) && d.length === 10) return d.slice(0,2)+'-'+d.slice(2,6)+'-'+d.slice(6);
-      // 10 digits, 3-digit area code → 3-3-4
       if (/^0\d{2}/.test(d) && d.length === 10) return d.slice(0,3)+'-'+d.slice(3,6)+'-'+d.slice(6);
-      // 11 digits, 4-digit area code → 4-2-5 (less common but safe pattern)
       if (/^0\d{3}/.test(d) && d.length === 10) return d.slice(0,4)+'-'+d.slice(4,6)+'-'+d.slice(6);
       return raw;
     }
@@ -108,7 +129,6 @@
     /* ========== VCF Parser ========== */
     function parseVCF(text) {
       const contacts = [];
-      // Unfold continuation lines (RFC 2425)
       const unfolded = text.replace(/\r\n[ \t]/g, '').replace(/\r(?!\n)/g, '\r\n');
       const blocks = unfolded.split(/(?=BEGIN:VCARD)/i);
 
@@ -148,14 +168,12 @@
 
     /* ========== Cleansing Engine ========== */
     function cleanseContacts(raw) {
-      // 1. Normalize each contact
       const contacts = raw.map(c => ({
         name: c.name.trim(),
         phones: c.phones.map(p => normalizePhone(p)),
         emails: [...c.emails],
       }));
 
-      // 2. Deduplicate phones within each contact
       contacts.forEach(c => {
         const seen = new Set();
         c.phones = c.phones.filter(p => {
@@ -166,7 +184,6 @@
         });
       });
 
-      // 3. Merge contacts with identical names
       const map = new Map();
       for (const c of contacts) {
         const key = c.name;
@@ -185,14 +202,13 @@
         }
       }
 
-      // 4. Format phones with hyphens
       return Array.from(map.values()).map(c => ({
         ...c,
         phones: c.phones.map(formatPhone),
       }));
     }
 
-    /* ========== VCF Generator (vCard 3.0, UTF-8) ========== */
+    /* ========== VCF Generator ========== */
     function generateVCF(contacts) {
       let out = '';
       for (const c of contacts) {
@@ -227,19 +243,19 @@
 
     /* ========== UI Components ========== */
 
-    function GlassCard({ children, className = '', style = {} }) {
+    function Card({ children, className = '', style = {} }) {
       return (
-        <div className={`glass rounded-3xl p-6 sm:p-8 shadow-2xl shadow-indigo-500/10 ${className}`} style={style}>
+        <div className={`bg-white rounded-[2rem] p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 ${className}`} style={style}>
           {children}
         </div>
       );
     }
 
-    function GradientButton({ children, onClick, className = '', id, disabled = false }) {
+    function PrimaryButton({ children, onClick, className = '', id, disabled = false }) {
       return (
         <button id={id} onClick={onClick} disabled={disabled}
-          className={`btn-gradient w-full text-white font-semibold rounded-2xl py-4 px-6 flex items-center justify-center gap-3 text-base
-          disabled:opacity-40 disabled:cursor-not-allowed transition-all ${className}`}>
+          className={`w-full bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl py-4 px-6 flex items-center justify-center gap-3 text-[15px]
+          disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:bg-slate-900 ${className}`}>
           {children}
         </button>
       );
@@ -248,8 +264,8 @@
     function SecondaryButton({ children, onClick, className = '', id }) {
       return (
         <button id={id} onClick={onClick}
-          className={`w-full rounded-2xl py-4 px-6 flex items-center justify-center gap-3 text-base font-medium
-          text-white/80 border border-white/10 hover:border-white/20 hover:bg-white/5 transition-all ${className}`}>
+          className={`w-full bg-white hover:bg-slate-50 text-slate-700 font-bold border border-slate-200 rounded-2xl py-4 px-6 flex items-center justify-center gap-3 text-[15px]
+          transition-all hover:border-slate-300 active:bg-slate-100 ${className}`}>
           {children}
         </button>
       );
@@ -259,30 +275,30 @@
     function IdleView({ hasContactPicker, onPickContacts, onFileClick }) {
       return (
         <div className="anim-fade-in-up">
-          <GlassCard>
+          <Card>
             {/* Hero icon */}
-            <div className="flex justify-center mb-6">
+            <div className="flex justify-center mb-8">
               <div className="relative">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                  <IconUsers size={36} className="text-white" />
+                <div className="w-20 h-20 rounded-[1.5rem] bg-slate-50 border border-slate-100 flex items-center justify-center shadow-sm">
+                  <IconUsers size={32} className="text-slate-700" />
                 </div>
                 <div className="absolute -top-2 -right-2 anim-bounce-in delay-300">
-                  <IconSparkles size={22} className="text-amber-400" />
+                  <IconSparkles size={24} className="text-amber-400" />
                 </div>
               </div>
             </div>
 
             {/* Title */}
-            <h1 className="text-2xl font-bold text-white text-center mb-2">連絡先クリーナー</h1>
-            <p className="text-white/50 text-sm text-center mb-8 leading-relaxed">
+            <h1 className="text-[1.35rem] font-bold text-slate-900 text-center mb-3 tracking-tight">連絡先クリーナー</h1>
+            <p className="text-slate-500 text-[13px] text-center mb-8 leading-relaxed font-medium">
               アドレス帳の重複・表記ゆれを自動で解消し<br/>
-              きれいなVCFファイルにエクスポートします
+              きれいなVCFファイルに整理します
             </p>
 
             {/* Feature pills */}
             <div className="flex flex-wrap justify-center gap-2 mb-8">
               {['重複を統合','番号を統一','ワンタップ'].map((t, i) => (
-                <span key={i} className="text-xs text-indigo-300/80 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-3 py-1">
+                <span key={i} className="text-[11px] font-bold text-slate-600 bg-slate-100 rounded-full px-3 py-1.5 tracking-wide">
                   {t}
                 </span>
               ))}
@@ -291,33 +307,32 @@
             {/* Action buttons */}
             <div className="space-y-3">
               {hasContactPicker && (
-                <GradientButton id="btn-contact-picker" onClick={onPickContacts}>
+                <PrimaryButton id="btn-contact-picker" onClick={onPickContacts}>
                   <IconSmartphone size={20} />
                   アドレス帳から選択して整理
-                </GradientButton>
+                </PrimaryButton>
               )}
               <div onClick={onFileClick}>
                 {hasContactPicker ? (
                   <SecondaryButton id="btn-vcf-upload">
                     <IconFile size={20} />
-                    VCFファイルを選択して整理
+                    VCFファイルから整理
                   </SecondaryButton>
                 ) : (
-                  <GradientButton id="btn-vcf-upload-primary">
+                  <PrimaryButton id="btn-vcf-upload-primary">
                     <IconUpload size={20} />
                     VCFファイルを選択して整理
-                  </GradientButton>
+                  </PrimaryButton>
                 )}
               </div>
             </div>
 
-            {/* Hint */}
-            <p className="text-white/30 text-xs text-center mt-6">
-              {hasContactPicker
-                ? 'Contact Picker API に対応しています'
-                : 'iPhoneの場合: 連絡先アプリ → 共有 → VCFで書き出し'}
-            </p>
-          </GlassCard>
+            {hasContactPicker && (
+              <p className="text-slate-400 text-xs text-center mt-6 font-medium">
+                Contact Picker API に対応しています
+              </p>
+            )}
+          </Card>
         </div>
       );
     }
@@ -326,19 +341,19 @@
     function ProcessingView() {
       return (
         <div className="anim-fade-in-up">
-          <GlassCard className="text-center">
+          <Card className="text-center">
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 rounded-full bg-indigo-500/20 flex items-center justify-center">
-                <IconLoader size={32} className="text-indigo-400 anim-spin" />
+              <div className="w-16 h-16 rounded-[1.25rem] bg-slate-50 border border-slate-100 flex items-center justify-center">
+                <IconLoader size={32} className="text-slate-700 anim-spin" />
               </div>
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">整理しています…</h2>
-            <p className="text-white/40 text-sm mb-6">重複を検出し、データをクリーンアップ中</p>
-            <div className="space-y-2">
-              <div className="shimmer-bar h-2 rounded-full"></div>
-              <div className="shimmer-bar h-2 rounded-full w-3/4 mx-auto"></div>
+            <h2 className="text-lg font-bold text-slate-900 mb-2 tracking-tight">整理しています…</h2>
+            <p className="text-slate-500 text-[13px] mb-8 font-medium">重複を検出し、データをクリーンアップ中</p>
+            <div className="space-y-3 w-4/5 mx-auto">
+              <div className="shimmer-bar-light h-1.5 rounded-full"></div>
+              <div className="shimmer-bar-light h-1.5 rounded-full w-3/4 mx-auto"></div>
             </div>
-          </GlassCard>
+          </Card>
         </div>
       );
     }
@@ -348,54 +363,54 @@
       const reduced = originalCount - cleanedCount;
       return (
         <div className="anim-fade-in-up">
-          <GlassCard className="text-center relative overflow-hidden">
+          <Card className="text-center relative overflow-hidden">
             {/* Confetti */}
             <div className="absolute top-1/3 left-1/2 pointer-events-none" aria-hidden="true">
-              <div className="w-2 h-2 bg-amber-400 rounded-full absolute" style={{animation:'confetti1 1s ease-out forwards'}}/>
-              <div className="w-2 h-2 bg-emerald-400 rounded-full absolute" style={{animation:'confetti2 1.1s ease-out forwards'}}/>
-              <div className="w-1.5 h-1.5 bg-violet-400 rounded-full absolute" style={{animation:'confetti3 .9s ease-out forwards'}}/>
-              <div className="w-2 h-2 bg-rose-400 rounded-full absolute" style={{animation:'confetti4 1.05s ease-out forwards'}}/>
+              <div className="w-2 h-2 bg-amber-300 rounded-full absolute" style={{animation:'confetti1 1s ease-out forwards'}}/>
+              <div className="w-2 h-2 bg-emerald-300 rounded-full absolute" style={{animation:'confetti2 1.1s ease-out forwards'}}/>
+              <div className="w-1.5 h-1.5 bg-blue-300 rounded-full absolute" style={{animation:'confetti3 .9s ease-out forwards'}}/>
+              <div className="w-2 h-2 bg-rose-300 rounded-full absolute" style={{animation:'confetti4 1.05s ease-out forwards'}}/>
             </div>
 
-            <div className="flex justify-center mb-5">
-              <div className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center anim-bounce-in">
-                <IconCheck size={40} className="text-emerald-400" />
+            <div className="flex justify-center mb-6">
+              <div className="w-20 h-20 rounded-[1.5rem] bg-emerald-50 flex items-center justify-center anim-bounce-in">
+                <IconCheck size={36} className="text-emerald-500" />
               </div>
             </div>
-            <h2 className="text-xl font-bold text-white mb-3">整理が完了しました！</h2>
+            <h2 className="text-lg font-bold text-slate-900 mb-5 tracking-tight">整理が完了しました！</h2>
 
             {/* Stats card */}
-            <div className="bg-white/5 rounded-2xl p-5 mb-6 space-y-3 text-left">
+            <div className="bg-slate-50 rounded-2xl p-5 mb-8 space-y-3 text-left border border-slate-100">
               <div className="flex items-center justify-between">
-                <span className="text-white/50 text-sm">元の連絡先</span>
-                <span className="text-white font-bold text-lg">{originalCount}<span className="text-white/40 text-sm ml-1">件</span></span>
+                <span className="text-slate-500 text-[13px] font-bold">元の連絡先</span>
+                <span className="text-slate-900 font-bold text-lg">{originalCount}<span className="text-slate-400 text-xs ml-1 font-bold">件</span></span>
               </div>
-              <div className="border-t border-white/5"></div>
+              <div className="border-t border-slate-200/60"></div>
               <div className="flex items-center justify-between">
-                <span className="text-white/50 text-sm">整理後</span>
-                <span className="text-emerald-400 font-bold text-lg">{cleanedCount}<span className="text-emerald-400/60 text-sm ml-1">件</span></span>
+                <span className="text-slate-500 text-[13px] font-bold">整理後</span>
+                <span className="text-emerald-600 font-bold text-lg">{cleanedCount}<span className="text-emerald-600/60 text-xs ml-1 font-bold">件</span></span>
               </div>
               {reduced > 0 && (
                 <>
-                  <div className="border-t border-white/5"></div>
+                  <div className="border-t border-slate-200/60"></div>
                   <div className="flex items-center justify-between">
-                    <span className="text-white/50 text-sm">削減</span>
-                    <span className="text-amber-400 font-bold text-lg">-{reduced}<span className="text-amber-400/60 text-sm ml-1">件</span></span>
+                    <span className="text-slate-500 text-[13px] font-bold">削減</span>
+                    <span className="text-amber-500 font-bold text-lg">-{reduced}<span className="text-amber-500/60 text-xs ml-1 font-bold">件</span></span>
                   </div>
                 </>
               )}
             </div>
 
-            <p className="text-white/40 text-sm mb-6">
+            <p className="text-slate-500 text-[13px] mb-8 font-medium leading-relaxed">
               VCFファイルがダウンロードされました 📥<br/>
-              Androidの連絡先アプリでインポートできます
+              連絡先アプリでインポートしてください
             </p>
 
             <SecondaryButton id="btn-reset" onClick={onReset}>
               <IconRefresh size={18} />
               もう一度整理する
             </SecondaryButton>
-          </GlassCard>
+          </Card>
         </div>
       );
     }
@@ -404,19 +419,19 @@
     function ErrorView({ message, onReset }) {
       return (
         <div className="anim-fade-in-up">
-          <GlassCard className="text-center">
-            <div className="flex justify-center mb-5">
-              <div className="w-16 h-16 rounded-full bg-rose-500/20 flex items-center justify-center anim-bounce-in">
-                <IconAlert size={32} className="text-rose-400" />
+          <Card className="text-center">
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 rounded-[1.25rem] bg-rose-50 flex items-center justify-center anim-bounce-in">
+                <IconAlert size={32} className="text-rose-500" />
               </div>
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">エラーが発生しました</h2>
-            <p className="text-white/50 text-sm mb-6 leading-relaxed">{message}</p>
+            <h2 className="text-lg font-bold text-slate-900 mb-3 tracking-tight">エラーが発生しました</h2>
+            <p className="text-slate-500 text-[13px] mb-8 font-medium leading-relaxed">{message}</p>
             <SecondaryButton id="btn-error-retry" onClick={onReset}>
               <IconRefresh size={18} />
               やり直す
             </SecondaryButton>
-          </GlassCard>
+          </Card>
         </div>
       );
     }
@@ -426,8 +441,8 @@
       if (!deferredPrompt) return null;
       return (
         <button id="btn-install-pwa" onClick={onInstall}
-          className="fixed bottom-6 right-6 z-50 btn-gradient text-white font-semibold rounded-2xl py-3 px-5
-          flex items-center gap-2 shadow-xl shadow-indigo-500/30 anim-fade-in-up text-sm">
+          className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white font-bold rounded-2xl py-3 px-5
+          flex items-center gap-2 shadow-lg shadow-slate-900/10 anim-fade-in-up text-[13px] hover:-translate-y-0.5 transition-transform">
           <IconDownload size={18} />
           インストール
         </button>
@@ -452,7 +467,6 @@
         );
         const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); };
         window.addEventListener('beforeinstallprompt', handler);
-        // Register service worker
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.register('./sw.js').catch(() => {});
         }
@@ -534,13 +548,9 @@
       }, []);
 
       return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950/80 to-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
-          {/* Background blobs */}
-          <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-            <div className="absolute -top-32 -right-32 w-72 h-72 bg-indigo-600/15 rounded-full blur-3xl" />
-            <div className="absolute -bottom-32 -left-32 w-72 h-72 bg-violet-600/15 rounded-full blur-3xl" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-500/5 rounded-full blur-3xl" />
-          </div>
+        <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center p-4 relative overflow-hidden">
+          {/* Subtle background element */}
+          <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-slate-100 to-transparent pointer-events-none" />
 
           {/* Main content */}
           <main className="relative w-full max-w-sm z-10">
@@ -565,7 +575,7 @@
             id="file-input-vcf"
           />
 
-          {/* PWA install button (hidden in standalone mode) */}
+          {/* PWA install button */}
           {!isStandalone && <InstallButton deferredPrompt={deferredPrompt} onInstall={handleInstall} />}
         </div>
       );
