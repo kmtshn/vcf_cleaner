@@ -103,7 +103,37 @@
     const IconLoader = (p) => <I {...p}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></I>;
     const IconDownload = (p) => <I {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></I>;
     const IconRefresh = (p) => <I {...p}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></I>;
-    const IconFile = (p) => <I {...p}><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></I>;
+
+    /* ========== Kana Utilities ========== */
+    const kanaMap = {
+        'ガ':'ｶﾞ','ギ':'ｷﾞ','グ':'ｸﾞ','ゲ':'ｹﾞ','ゴ':'ｺﾞ',
+        'ザ':'ｻﾞ','ジ':'ｼﾞ','ズ':'ｽﾞ','ゼ':'ｾﾞ','ゾ':'ｿﾞ',
+        'ダ':'ﾀﾞ','ヂ':'ﾁﾞ','ヅ':'ﾂﾞ','デ':'ﾃﾞ','ド':'ﾄﾞ',
+        'バ':'ﾊﾞ','ビ':'ﾋﾞ','ブ':'ﾌﾞ','ベ':'ﾍﾞ','ボ':'ﾎﾞ',
+        'パ':'ﾊﾟ','ピ':'ﾋﾟ','プ':'ﾌﾟ','ペ':'ﾍﾟ','ポ':'ﾎﾟ',
+        'ヴ':'ｳﾞ','ア':'ｱ','イ':'ｲ','ウ':'ｳ','エ':'ｴ','オ':'ｵ',
+        'カ':'ｶ','キ':'ｷ','ク':'ｸ','ケ':'ｹ','コ':'ｺ',
+        'サ':'ｻ','シ':'ｼ','ス':'ｽ','セ':'ｾ','ソ':'ｿ',
+        'タ':'ﾀ','チ':'ﾁ','ツ':'ﾂ','テ':'ﾃ','ト':'ﾄ',
+        'ナ':'ﾅ','ニ':'ﾆ','ヌ':'ﾇ','ネ':'ﾈ','ノ':'ﾉ',
+        'ハ':'ﾊ','ヒ':'ﾋ','フ':'ﾌ','ヘ':'ﾍ','ホ':'ﾎ',
+        'マ':'ﾏ','ミ':'ﾐ','ム':'ﾑ','メ':'ﾒ','モ':'ﾓ',
+        'ヤ':'ﾔ','ユ':'ﾕ','ヨ':'ﾖ','ラ':'ﾗ','リ':'ﾘ','ル':'ﾙ','レ':'ﾚ','ロ':'ﾛ',
+        'ワ':'ﾜ','ヲ':'ｦ','ン':'ﾝ','ァ':'ｧ','ィ':'ｨ','ゥ':'ｩ','ェ':'ｪ','ォ':'ｫ',
+        'ッ':'ｯ','ャ':'ｬ','ュ':'ｭ','ョ':'ｮ','ー':'ｰ','、':'､','。':'｡','・':'･'
+    };
+
+    function toHankakuKana(str) {
+        if (!str) return "";
+        let kata = str.replace(/[\u3041-\u3096]/g, function(match) {
+            const chr = match.charCodeAt(0) + 0x60;
+            return String.fromCharCode(chr);
+        });
+        let reg = new RegExp('(' + Object.keys(kanaMap).join('|') + ')', 'g');
+        return kata.replace(reg, function(match) {
+            return kanaMap[match];
+        });
+    }
 
     /* ========== Phone Number Utilities ========== */
     function normalizePhone(phone) {
@@ -135,9 +165,9 @@
       for (const block of blocks) {
         if (!block.trim().match(/^BEGIN:VCARD/i)) continue;
         const lines = block.split(/\r?\n/);
-        let fn = '', nName = '';
+        let fn = '', nName = '', lastName = '', firstName = '';
         let sortString = '', phoneticLast = '', phoneticFirst = '';
-        const phones = [], emails = [];
+        const phones = [], emails = [], adrs = [];
 
         for (const line of lines) {
           const upperLine = line.toUpperCase();
@@ -148,7 +178,9 @@
             const m = line.match(/^N[^:]*:(.*)/i);
             if (m) {
               const parts = m[1].split(';');
-              nName = ((parts[0]||'')+ ' ' + (parts[1]||'')).trim();
+              lastName = parts[0] ? parts[0].trim() : '';
+              firstName = parts[1] ? parts[1].trim() : '';
+              nName = ((lastName)+ ' ' + (firstName)).trim();
             }
           } else if (upperLine.startsWith('TEL')) {
             const m = line.match(/^TEL[^:]*:(.*)/i);
@@ -156,6 +188,9 @@
           } else if (upperLine.startsWith('EMAIL')) {
             const m = line.match(/^EMAIL[^:]*:(.*)/i);
             if (m && m[1].trim()) emails.push(m[1].trim());
+          } else if (upperLine.startsWith('ADR')) {
+            const m = line.match(/^ADR[^:]*:(.*)/i);
+            if (m && m[1].trim()) adrs.push(m[1].trim());
           } else if (upperLine.startsWith('SORT-STRING')) {
             const m = line.match(/^SORT-STRING[^:]*:(.*)/i);
             if (m) sortString = m[1].trim();
@@ -184,7 +219,17 @@
         }
         
         if (name || phones.length || emails.length) {
-          contacts.push({ name: name || '(名前なし)', phones, emails, sortString, phoneticLast, phoneticFirst });
+          contacts.push({ 
+            name: name || '(名前なし)', 
+            lastName, 
+            firstName,
+            phones, 
+            emails, 
+            adrs,
+            sortString, 
+            phoneticLast, 
+            phoneticFirst 
+          });
         }
       }
       return contacts;
@@ -194,8 +239,11 @@
     function cleanseContacts(raw) {
       const contacts = raw.map(c => ({
         name: c.name.trim(),
+        lastName: c.lastName || '',
+        firstName: c.firstName || '',
         phones: c.phones.map(p => normalizePhone(p)),
         emails: [...c.emails],
+        adrs: c.adrs ? [...c.adrs] : [],
         sortString: c.sortString || '',
         phoneticLast: c.phoneticLast || '',
         phoneticFirst: c.phoneticFirst || '',
@@ -224,13 +272,19 @@
             const lo = e.toLowerCase();
             if (!ex.emails.some(ee => ee.toLowerCase() === lo)) ex.emails.push(e);
           }
-          // フリガナを保持（既存にない場合のみ補完）
+          for (const a of c.adrs) {
+            if (!ex.adrs.some(ea => ea === a)) ex.adrs.push(a);
+          }
+          // 不足している情報を補完
+          if (!ex.lastName && c.lastName) ex.lastName = c.lastName;
+          if (!ex.firstName && c.firstName) ex.firstName = c.firstName;
           if (!ex.sortString && c.sortString) ex.sortString = c.sortString;
           if (!ex.phoneticLast && c.phoneticLast) ex.phoneticLast = c.phoneticLast;
           if (!ex.phoneticFirst && c.phoneticFirst) ex.phoneticFirst = c.phoneticFirst;
         } else {
           map.set(key, {
-            name: c.name, phones: [...c.phones], emails: [...c.emails],
+            name: c.name, lastName: c.lastName, firstName: c.firstName,
+            phones: [...c.phones], emails: [...c.emails], adrs: [...c.adrs],
             sortString: c.sortString, phoneticLast: c.phoneticLast, phoneticFirst: c.phoneticFirst,
           });
         }
@@ -242,38 +296,74 @@
       }));
     }
 
-    /* ========== VCF Generator ========== */
+    /* ========== Custom VCF Generator ========== */
     function generateVCF(contacts) {
       let out = '';
       for (const c of contacts) {
         out += 'BEGIN:VCARD\r\n';
         out += 'VERSION:3.0\r\n';
-        out += 'FN:' + c.name + '\r\n';
-        const parts = c.name.split(/\s+/);
-        if (parts.length >= 2) {
-          out += 'N:' + parts[0] + ';' + parts.slice(1).join(' ') + ';;;\r\n';
-        } else {
-          out += 'N:' + c.name + ';;;;\r\n';
-        }
-        // フリガナ（ヨミガナ）フィールドを保持
-        if (c.phoneticLast || c.phoneticFirst) {
-          out += 'X-PHONETIC-LAST-NAME:' + (c.phoneticLast || '') + '\r\n';
-          out += 'X-PHONETIC-FIRST-NAME:' + (c.phoneticFirst || '') + '\r\n';
-          out += 'SOUND;X-IRMC-N:' + (c.phoneticLast || '') + ';' + (c.phoneticFirst || '') + ';;;\r\n';
+        
+        let finalLName = c.lastName || '';
+        let finalFName = c.firstName || '';
+        
+        // 姓・名が両方空だが、name がある場合はスペースで分割を試みる
+        if (!finalLName && !finalFName && c.name && c.name !== '(名前なし)') {
+            const parts = c.name.split(/[\s　]+/);
+            finalLName = parts[0] || '';
+            finalFName = parts.slice(1).join(' ') || '';
         }
         
-        const sortStr = c.sortString || [c.phoneticLast, c.phoneticFirst].filter(Boolean).join(' ');
-        if (sortStr) {
-          out += 'SORT-STRING:' + sortStr + '\r\n';
+        const fullName = (finalLName + ' ' + finalFName).trim();
+
+        // 姓名
+        out += `N;CHARSET=UTF-8:${finalLName};${finalFName};;;\r\n`;
+        out += `FN;CHARSET=UTF-8:${fullName}\r\n`;
+        
+        // フリガナ（半角カナ変換）
+        const soundLast = toHankakuKana(c.phoneticLast || '');
+        const soundFirst = toHankakuKana(c.phoneticFirst || '');
+        out += `SOUND;X-IRMC-N;CHARSET=UTF-8:${soundLast};${soundFirst};;;\r\n`;
+        
+        // 電話番号
+        if (c.phones && c.phones.length > 0) {
+            for (const p of c.phones) {
+                out += `TEL;WORK:${p}\r\n`;
+            }
+        } else {
+            out += `TEL;WORK:\r\n`;
         }
-        for (const p of c.phones) out += 'TEL;TYPE=CELL:' + p + '\r\n';
-        for (const e of c.emails) out += 'EMAIL;TYPE=INTERNET:' + e + '\r\n';
+        
+        // メールアドレス
+        if (c.emails && c.emails.length > 0) {
+            for (const e of c.emails) {
+                out += `EMAIL;HOME:${e}\r\n`;
+            }
+        } else {
+            out += `EMAIL;HOME:\r\n`;
+        }
+        
+        // 住所
+        if (c.adrs && c.adrs.length > 0) {
+            for (const a of c.adrs) {
+                out += `ADR;HOME:${a}\r\n`;
+            }
+        } else {
+            out += `ADR;HOME:\r\n`;
+        }
+
+        // 指定されたカスタム拡張タグ群
+        out += 'X-CLASS:PUBLIC\r\n';
+        out += 'X-REDUCTION:\r\n';
+        out += 'X-NO:\r\n';
+        out += 'X-DCM-HMN-MODE:\r\n';
+        
         out += 'END:VCARD\r\n';
       }
       return out;
     }
 
     function downloadVCF(vcfStr) {
+      // BOMなしの場合は文字化けする環境があるため、念のためBOMを付与（文字化け防止）
       const bom = '\uFEFF';
       const blob = new Blob([bom + vcfStr], { type: 'text/vcard;charset=utf-8' });
       const url = URL.createObjectURL(blob);
@@ -321,7 +411,6 @@
       return (
         <div className="anim-fade-in-up">
           <Card>
-            {/* Hero icon */}
             <div className="flex justify-center mb-8">
               <div className="relative">
                 <div className="w-20 h-20 rounded-[1.5rem] bg-slate-50 border border-slate-100 flex items-center justify-center shadow-sm">
@@ -333,25 +422,21 @@
               </div>
             </div>
 
-            {/* Title */}
             <h1 className="text-[1.35rem] font-bold text-slate-900 text-center mb-3 tracking-tight">連絡先クリーナー</h1>
             <p className="text-slate-500 text-[13px] text-center mb-8 leading-relaxed font-medium">
               アドレス帳の重複・表記ゆれを自動で解消し<br/>
               きれいなVCFファイルに整理します
             </p>
 
-            {/* Feature pills */}
             <div className="flex flex-wrap justify-center gap-2 mb-8">
-              {['重複を統合','番号を統一','フリガナ保持'].map((t, i) => (
+              {['重複を統合','番号を統一','半角カナ変換'].map((t, i) => (
                 <span key={i} className="text-[11px] font-bold text-slate-600 bg-slate-100 rounded-full px-3 py-1.5 tracking-wide">
                   {t}
                 </span>
               ))}
             </div>
 
-            {/* Action buttons */}
             <div className="space-y-3">
-              {/* VCF一括処理（推奨） */}
               <div>
                 <div onClick={onFileClick}>
                   <PrimaryButton id={hasContactPicker ? "btn-vcf-upload" : "btn-vcf-upload-primary"}>
@@ -361,7 +446,6 @@
                 </div>
               </div>
 
-              {/* Contact Picker（選択式） */}
               {hasContactPicker && (
                 <button id="btn-contact-picker" onClick={onPickContacts}
                   className="w-full bg-white hover:bg-slate-50 text-slate-700 font-bold border border-slate-200 rounded-2xl py-4 px-6 flex items-center justify-center gap-3 text-[15px] transition-all hover:border-slate-300 active:bg-slate-100">
@@ -371,7 +455,6 @@
               )}
             </div>
 
-            {/* 全件エクスポートガイド */}
             <div className="mt-5 bg-amber-50 border border-amber-100 rounded-2xl p-4">
               <p className="text-[12px] font-bold text-amber-800 mb-2">📱 全件を一括処理する方法</p>
               <ol className="text-[11.5px] text-amber-700 font-medium space-y-1 list-decimal list-inside leading-relaxed">
@@ -381,12 +464,6 @@
                 <li>上の「VCFファイルで全件一括処理」で読み込む</li>
               </ol>
             </div>
-
-            {hasContactPicker && (
-              <p className="text-slate-400 text-[11px] text-center mt-4 font-medium">
-                ※ 連絡先を選ぶ場合、端末によっては複数選択できない場合があります
-              </p>
-            )}
           </Card>
         </div>
       );
@@ -403,7 +480,7 @@
               </div>
             </div>
             <h2 className="text-lg font-bold text-slate-900 mb-2 tracking-tight">整理しています…</h2>
-            <p className="text-slate-500 text-[13px] mb-8 font-medium">重複を検出し、データをクリーンアップ中</p>
+            <p className="text-slate-500 text-[13px] mb-8 font-medium">指定形式への変換・半角カナ処理中</p>
             <div className="space-y-3 w-4/5 mx-auto">
               <div className="shimmer-bar-light h-1.5 rounded-full"></div>
               <div className="shimmer-bar-light h-1.5 rounded-full w-3/4 mx-auto"></div>
@@ -419,7 +496,6 @@
       return (
         <div className="anim-fade-in-up">
           <Card className="text-center relative overflow-hidden">
-            {/* Confetti */}
             <div className="absolute top-1/3 left-1/2 pointer-events-none" aria-hidden="true">
               <div className="w-2 h-2 bg-amber-300 rounded-full absolute" style={{animation:'confetti1 1s ease-out forwards'}}/>
               <div className="w-2 h-2 bg-emerald-300 rounded-full absolute" style={{animation:'confetti2 1.1s ease-out forwards'}}/>
@@ -434,7 +510,6 @@
             </div>
             <h2 className="text-lg font-bold text-slate-900 mb-5 tracking-tight">整理が完了しました！</h2>
 
-            {/* Stats card */}
             <div className="bg-slate-50 rounded-2xl p-5 mb-8 space-y-3 text-left border border-slate-100">
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 text-[13px] font-bold">元の連絡先</span>
@@ -457,7 +532,7 @@
             </div>
 
             <p className="text-slate-500 text-[13px] mb-8 font-medium leading-relaxed">
-              VCFファイルがダウンロードされました 📥<br/>
+              指定フォーマットのVCFがダウンロードされました 📥<br/>
               連絡先アプリでインポートしてください
             </p>
 
@@ -604,10 +679,8 @@
 
       return (
         <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center p-4 relative overflow-hidden">
-          {/* Subtle background element */}
           <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-slate-100 to-transparent pointer-events-none" />
 
-          {/* Main content */}
           <main className="relative w-full max-w-sm z-10">
             {state === 'idle' && (
               <IdleView
@@ -623,20 +696,17 @@
             {state === 'error' && <ErrorView message={errorMessage} onReset={reset} />}
           </main>
 
-          {/* Hidden file input */}
           <input
-            ref={fileInputRef} type="file" accept=".vcf,.vcf"
+            ref={fileInputRef} type="file" accept=".vcf,.vcard,text/vcard"
             className="hidden" onChange={handleFileUpload}
             id="file-input-vcf"
           />
 
-          {/* PWA install button */}
           {!isStandalone && <InstallButton deferredPrompt={deferredPrompt} onInstall={handleInstall} />}
         </div>
       );
     }
 
-    /* ========== Mount ========== */
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
   </script>
