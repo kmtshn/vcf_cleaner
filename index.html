@@ -105,33 +105,38 @@
     const IconRefresh = (p) => <I {...p}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></I>;
 
     /* ========== Kana Utilities ========== */
-    const kanaMap = {
-        'ガ':'ｶﾞ','ギ':'ｷﾞ','グ':'ｸﾞ','ゲ':'ｹﾞ','ゴ':'ｺﾞ',
-        'ザ':'ｻﾞ','ジ':'ｼﾞ','ズ':'ｽﾞ','ゼ':'ｾﾞ','ゾ':'ｿﾞ',
-        'ダ':'ﾀﾞ','ヂ':'ﾁﾞ','ヅ':'ﾂﾞ','デ':'ﾃﾞ','ド':'ﾄﾞ',
-        'バ':'ﾊﾞ','ビ':'ﾋﾞ','ブ':'ﾌﾞ','ベ':'ﾍﾞ','ボ':'ﾎﾞ',
-        'パ':'ﾊﾟ','ピ':'ﾋﾟ','プ':'ﾌﾟ','ペ':'ﾍﾟ','ポ':'ﾎﾟ',
-        'ヴ':'ｳﾞ','ア':'ｱ','イ':'ｲ','ウ':'ｳ','エ':'ｴ','オ':'ｵ',
-        'カ':'ｶ','キ':'ｷ','ク':'ｸ','ケ':'ｹ','コ':'ｺ',
-        'サ':'ｻ','シ':'ｼ','ス':'ｽ','セ':'ｾ','ソ':'ｿ',
-        'タ':'ﾀ','チ':'ﾁ','ツ':'ﾂ','テ':'ﾃ','ト':'ﾄ',
-        'ナ':'ﾅ','ニ':'ﾆ','ヌ':'ﾇ','ネ':'ﾈ','ノ':'ﾉ',
-        'ハ':'ﾊ','ヒ':'ﾋ','フ':'ﾌ','ヘ':'ﾍ','ホ':'ﾎ',
-        'マ':'ﾏ','ミ':'ﾐ','ム':'ﾑ','メ':'ﾒ','モ':'ﾓ',
-        'ヤ':'ﾔ','ユ':'ﾕ','ヨ':'ﾖ','ラ':'ﾗ','リ':'ﾘ','ル':'ﾙ','レ':'ﾚ','ロ':'ﾛ',
-        'ワ':'ﾜ','ヲ':'ｦ','ン':'ﾝ','ァ':'ｧ','ィ':'ｨ','ゥ':'ｩ','ェ':'ｪ','ォ':'ｫ',
-        'ッ':'ｯ','ャ':'ｬ','ュ':'ｭ','ョ':'ｮ','ー':'ｰ','、':'､','。':'｡','・':'･'
+    const hankakuKanaMap = {
+        'ｶﾞ': 'ガ', 'ｷﾞ': 'ギ', 'ｸﾞ': 'グ', 'ｹﾞ': 'ゲ', 'ｺﾞ': 'ゴ',
+        'ｻﾞ': 'ザ', 'ｼﾞ': 'ジ', 'ｽﾞ': 'ズ', 'ｾﾞ': 'ゼ', 'ｿﾞ': 'ゾ',
+        'ﾀﾞ': 'ダ', 'ﾁﾞ': 'ヂ', 'ﾂﾞ': 'ヅ', 'ﾃﾞ': 'デ', 'ﾄﾞ': 'ド',
+        'ﾊﾞ': 'バ', 'ﾋﾞ': 'ビ', 'ﾌﾞ': 'ブ', 'ﾍﾞ': 'ベ', 'ﾎﾞ': 'ボ',
+        'ﾊﾟ': 'パ', 'ﾋﾟ': 'ピ', 'ﾌﾟ': 'プ', 'ﾍﾟ': 'ペ', 'ﾎﾟ': 'ポ',
+        'ｳﾞ': 'ヴ', 'ｱ': 'ア', 'ｲ': 'イ', 'ｳ': 'ウ', 'ｴ': 'エ', 'ｵ': 'オ',
+        'ｶ': 'カ', 'ｷ': 'キ', 'ｸ': 'ク', 'ｹ': 'ケ', 'ｺ': 'コ',
+        'ｻ': 'サ', 'ｼ': 'シ', 'ｽ': 'ス', 'ｾ': 'セ', 'ｿ': 'ソ',
+        'ﾀ': 'タ', 'ﾁ': 'チ', 'ﾂ': 'ツ', 'ﾃ': 'テ', 'ﾄ': 'ト',
+        'ﾅ': 'ナ', 'ﾆ': 'ニ', 'ﾇ': 'ヌ', 'ﾈ': 'ネ', 'ﾉ': 'ノ',
+        'ﾊ': 'ハ', 'ﾋ': 'ヒ', 'ﾌ': 'フ', 'ﾍ': 'ヘ', 'ﾎ': 'ホ',
+        'ﾏ': 'マ', 'ﾐ': 'ミ', 'ﾑ': 'ム', 'ﾒ': 'メ', 'ﾓ': 'モ',
+        'ﾔ': 'ヤ', 'ﾕ': 'ユ', 'ﾖ': 'ヨ', 'ﾗ': 'ラ', 'ﾘ': 'リ', 'ﾙ': 'ル', 'ﾚ': 'レ', 'ﾛ': 'ロ',
+        'ﾜ': 'ワ', 'ｦ': 'ヲ', 'ﾝ': 'ン', 'ｧ': 'ァ', 'ｨ': 'ィ', 'ｩ': 'ゥ', 'ｪ': 'ェ', 'ｫ': 'ォ',
+        'ｯ': 'ッ', 'ｬ': 'ャ', 'ｭ': 'ュ', 'ｮ': 'ョ', 'ｰ': 'ー', '､': '、', '｡': '。', '･': '・'
     };
 
-    function toHankakuKana(str) {
+    // 濁点・半濁点付きの2文字の半角カナが先にマッチするようにキーの長さでソート
+    const hankakuKanaKeys = Object.keys(hankakuKanaMap).sort((a, b) => b.length - a.length);
+    const hankakuRegExp = new RegExp('(' + hankakuKanaKeys.join('|') + ')', 'g');
+
+    function toHiragana(str) {
         if (!str) return "";
-        let kata = str.replace(/[\u3041-\u3096]/g, function(match) {
-            const chr = match.charCodeAt(0) + 0x60;
-            return String.fromCharCode(chr);
+        // 1. 半角カタカナを全角カタカナに変換
+        let zenkaku = str.replace(hankakuRegExp, function(match) {
+            return hankakuKanaMap[match];
         });
-        let reg = new RegExp('(' + Object.keys(kanaMap).join('|') + ')', 'g');
-        return kata.replace(reg, function(match) {
-            return kanaMap[match];
+        
+        // 2. 全角カタカナを全角ひらがなに変換 (ァ-ヶ を ぁ-ゖ に)
+        return zenkaku.replace(/[\u30A1-\u30FA]/g, function(match) {
+            return String.fromCharCode(match.charCodeAt(0) - 0x60);
         });
     }
 
@@ -319,9 +324,9 @@
         out += `N;CHARSET=UTF-8:${finalLName};${finalFName};;;\r\n`;
         out += `FN;CHARSET=UTF-8:${fullName}\r\n`;
         
-        // フリガナ（半角カナ変換）
-        const soundLast = toHankakuKana(c.phoneticLast || '');
-        const soundFirst = toHankakuKana(c.phoneticFirst || '');
+        // フリガナ（ひらがな変換）
+        const soundLast = toHiragana(c.phoneticLast || '');
+        const soundFirst = toHiragana(c.phoneticFirst || '');
         out += `SOUND;X-IRMC-N;CHARSET=UTF-8:${soundLast};${soundFirst};;;\r\n`;
         
         // 電話番号
@@ -429,7 +434,7 @@
             </p>
 
             <div className="flex flex-wrap justify-center gap-2 mb-8">
-              {['重複を統合','番号を統一','半角カナ変換'].map((t, i) => (
+              {['重複を統合','番号を統一','ひらがな変換'].map((t, i) => (
                 <span key={i} className="text-[11px] font-bold text-slate-600 bg-slate-100 rounded-full px-3 py-1.5 tracking-wide">
                   {t}
                 </span>
@@ -480,7 +485,7 @@
               </div>
             </div>
             <h2 className="text-lg font-bold text-slate-900 mb-2 tracking-tight">整理しています…</h2>
-            <p className="text-slate-500 text-[13px] mb-8 font-medium">指定形式への変換・半角カナ処理中</p>
+            <p className="text-slate-500 text-[13px] mb-8 font-medium">指定形式への変換・ひらがな処理中</p>
             <div className="space-y-3 w-4/5 mx-auto">
               <div className="shimmer-bar-light h-1.5 rounded-full"></div>
               <div className="shimmer-bar-light h-1.5 rounded-full w-3/4 mx-auto"></div>
