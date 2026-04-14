@@ -3,67 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>連絡先クリーナー（完全オフライン版）</title>
+  <title>連絡先クリーナー – アドレス帳を自動整理</title>
   <meta name="description" content="社内利用向け・完全オフラインで動作する連絡先整理ツール">
+  
+  <!-- PWA設定 -->
+  <meta name="theme-color" content="#F8F9FA">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icon-192.png">
   
   <style>
     /* CSS Reset & Variables */
     :root {
-      --bg-color: #F8F9FA;
-      --card-bg: #ffffff;
-      --slate-50: #f8fafc;
-      --slate-100: #f1f5f9;
-      --slate-200: #e2e8f0;
-      --slate-300: #cbd5e1;
-      --slate-500: #64748b;
-      --slate-600: #475569;
-      --slate-700: #334155;
-      --slate-800: #1e293b;
-      --slate-900: #0f172a;
-      --amber-50: #fffbeb;
-      --amber-100: #fef3c7;
-      --amber-300: #fcd34d;
-      --amber-400: #fbbf24;
-      --amber-500: #f59e0b;
-      --amber-700: #b45309;
-      --amber-800: #92400e;
-      --emerald-50: #ecfdf5;
-      --emerald-100: #d1fae5;
-      --emerald-300: #6ee7b7;
-      --emerald-500: #10b981;
-      --emerald-600: #059669;
-      --emerald-700: #047857;
-      --rose-50: #fff1f2;
-      --rose-300: #fda4af;
-      --rose-500: #f43f5e;
+      --bg-color: #F8F9FA; --card-bg: #ffffff;
+      --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0; --slate-300: #cbd5e1;
+      --slate-500: #64748b; --slate-600: #475569; --slate-700: #334155; --slate-800: #1e293b; --slate-900: #0f172a;
+      --amber-50: #fffbeb; --amber-100: #fef3c7; --amber-300: #fcd34d; --amber-400: #fbbf24; --amber-500: #f59e0b; --amber-700: #b45309;
+      --emerald-50: #ecfdf5; --emerald-100: #d1fae5; --emerald-300: #6ee7b7; --emerald-500: #10b981; --emerald-600: #059669; --emerald-700: #047857;
+      --rose-50: #fff1f2; --rose-300: #fda4af; --rose-500: #f43f5e;
       --blue-300: #93c5fd;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      /* ローカルのシステムフォントを使用（オフライン対応） */
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
-      background-color: var(--bg-color);
-      color: var(--slate-900);
-      letter-spacing: 0.02em;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      position: relative;
-      overflow-x: hidden;
+      background-color: var(--bg-color); color: var(--slate-900);
+      letter-spacing: 0.02em; min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 1rem; position: relative; overflow-x: hidden;
     }
 
     /* Background pattern */
     .bg-gradient {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 24rem;
+      position: absolute; top: 0; left: 0; width: 100%; height: 24rem;
       background: linear-gradient(to bottom, var(--slate-100), transparent);
-      pointer-events: none;
-      z-index: 0;
+      pointer-events: none; z-index: 0;
     }
 
     /* Animations */
@@ -83,40 +61,22 @@
     
     .shimmer-bar-light { 
       background: linear-gradient(90deg, var(--slate-100) 25%, var(--slate-200) 50%, var(--slate-100) 75%); 
-      background-size: 200% 100%; 
-      animation: shimmer 1.8s infinite; 
-      height: 6px;
-      border-radius: 9999px;
-      margin-bottom: 12px;
+      background-size: 200% 100%; animation: shimmer 1.8s infinite; 
+      height: 6px; border-radius: 9999px; margin-bottom: 12px;
     }
     .shimmer-bar-light.short { width: 75%; margin-inline: auto; }
 
     /* Layout & Components */
-    #app-container {
-      position: relative;
-      z-index: 10;
-      width: 100%;
-      max-width: 24rem; /* 384px */
-    }
+    #app-container { position: relative; z-index: 10; width: 100%; max-width: 24rem; }
 
     .card {
-      background-color: var(--card-bg);
-      border-radius: 2rem;
-      padding: 2rem;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.04);
-      border: 1px solid var(--slate-100);
-      text-align: center;
+      background-color: var(--card-bg); border-radius: 2rem; padding: 2rem;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.04); border: 1px solid var(--slate-100); text-align: center;
     }
-    @media (max-width: 400px) {
-      .card { padding: 1.5rem; }
-    }
+    @media (max-width: 400px) { .card { padding: 1.5rem; } }
 
     .icon-container { display: flex; justify-content: center; margin-bottom: 2rem; }
-    .icon-box {
-      width: 5rem; height: 5rem;
-      border-radius: 1.5rem;
-      display: flex; align-items: center; justify-content: center;
-    }
+    .icon-box { width: 5rem; height: 5rem; border-radius: 1.5rem; display: flex; align-items: center; justify-content: center; }
     .icon-box.slate { background-color: var(--slate-50); border: 1px solid var(--slate-100); color: var(--slate-700); }
     .icon-box.emerald { background-color: var(--emerald-50); color: var(--emerald-500); }
     .icon-box.rose { background-color: var(--rose-50); color: var(--rose-500); }
@@ -126,8 +86,8 @@
     p.subtitle { color: var(--slate-500); font-size: 13px; margin-bottom: 2rem; line-height: 1.6; font-weight: 500; }
 
     .tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-bottom: 2rem; }
-    .tag { font-size: 11px; font-weight: bold; color: var(--slate-600); background-color: var(--slate-100); border-radius: 9999px; padding: 0.375rem 0.75rem; letter-spacing: 0.025em; }
-    .tag.secure { background-color: var(--emerald-100); color: var(--emerald-700); display: flex; align-items: center; gap: 4px;}
+    .tag { font-size: 11px; font-weight: bold; color: var(--slate-600); background-color: var(--slate-100); border-radius: 9999px; padding: 0.375rem 0.75rem; }
+    .tag.secure { background-color: var(--emerald-100); color: var(--emerald-700); display: flex; align-items: center; gap: 4px; }
 
     .btn {
       width: 100%; font-weight: bold; border-radius: 1rem; padding: 1rem 1.5rem;
@@ -135,15 +95,11 @@
       transition: all 0.2s; cursor: pointer; border: none; font-family: inherit;
     }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-primary {
-      background-color: var(--slate-900); color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    }
+    .btn-primary { background-color: var(--slate-900); color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
     .btn-primary:hover:not(:disabled) { background-color: var(--slate-800); transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     .btn-primary:active:not(:disabled) { transform: translateY(0); }
     
-    .btn-secondary {
-      background-color: white; color: var(--slate-700); border: 1px solid var(--slate-200);
-    }
+    .btn-secondary { background-color: white; color: var(--slate-700); border: 1px solid var(--slate-200); }
     .btn-secondary:hover { background-color: var(--slate-50); border-color: var(--slate-300); }
     .btn-secondary:active { background-color: var(--slate-100); }
 
@@ -174,6 +130,18 @@
     .c4 { width: 8px; height: 8px; background-color: var(--rose-300); animation: confetti4 1.05s ease-out forwards; }
 
     input[type="file"] { display: none; }
+
+    /* PWA Install Button */
+    #btn-install-pwa {
+      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 50;
+      background-color: var(--slate-900); color: white; font-weight: bold;
+      border-radius: 1rem; padding: 0.8rem 1.25rem;
+      display: none; align-items: center; gap: 0.5rem; font-size: 13px;
+      box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.15); border: none; cursor: pointer;
+      transition: transform 0.2s; font-family: inherit;
+      animation: fadeInUp 0.5s ease-out;
+    }
+    #btn-install-pwa:hover { transform: translateY(-2px); }
   </style>
 </head>
 <body>
@@ -183,8 +151,13 @@
     <!-- UIはJSでここにレンダリングされます -->
   </main>
 
-  <!-- 非表示のファイルインプット -->
   <input type="file" id="file-input-vcf" accept=".vcf,.vcard,text/vcard" onchange="App.handleFileUpload(event)">
+
+  <!-- PWA Install Button -->
+  <button id="btn-install-pwa" onclick="App.handleInstall()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    アプリをインストール
+  </button>
 
   <script>
     /* ========== SVG Icons ========== */
@@ -199,25 +172,40 @@
       shield: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>`
     };
 
+    /* ========== PWA Logic ========== */
+    let deferredPrompt;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.error('SW registration failed:', err));
+      });
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (!isStandalone) {
+        document.getElementById('btn-install-pwa').style.display = 'flex';
+      }
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      document.getElementById('btn-install-pwa').style.display = 'none';
+      console.log('PWA was installed');
+    });
+
     /* ========== Logic Utilities ========== */
-    
-    // ひらがな変換
     const hankakuKanaMap = {
-        'ｶﾞ': 'ガ', 'ｷﾞ': 'ギ', 'ｸﾞ': 'グ', 'ｹﾞ': 'ゲ', 'ｺﾞ': 'ゴ',
-        'ｻﾞ': 'ザ', 'ｼﾞ': 'ジ', 'ｽﾞ': 'ズ', 'ｾﾞ': 'ゼ', 'ｿﾞ': 'ゾ',
-        'ﾀﾞ': 'ダ', 'ﾁﾞ': 'ヂ', 'ﾂﾞ': 'ヅ', 'ﾃﾞ': 'デ', 'ﾄﾞ': 'ド',
-        'ﾊﾞ': 'バ', 'ﾋﾞ': 'ビ', 'ﾌﾞ': 'ブ', 'ﾍﾞ': 'ベ', 'ﾎﾞ': 'ボ',
-        'ﾊﾟ': 'パ', 'ﾋﾟ': 'ピ', 'ﾌﾟ': 'プ', 'ﾍﾟ': 'ペ', 'ﾎﾟ': 'ポ',
-        'ｳﾞ': 'ヴ', 'ｱ': 'ア', 'ｲ': 'イ', 'ｳ': 'ウ', 'ｴ': 'エ', 'ｵ': 'オ',
-        'ｶ': 'カ', 'ｷ': 'キ', 'ｸ': 'ク', 'ｹ': 'ケ', 'ｺ': 'コ',
-        'ｻ': 'サ', 'ｼ': 'シ', 'ｽ': 'ス', 'ｾ': 'セ', 'ｿ': 'ソ',
-        'ﾀ': 'タ', 'ﾁ': 'チ', 'ﾂ': 'ツ', 'ﾃ': 'テ', 'ﾄ': 'ト',
-        'ﾅ': 'ナ', 'ﾆ': 'ニ', 'ﾇ': 'ヌ', 'ﾈ': 'ネ', 'ﾉ': 'ノ',
-        'ﾊ': 'ハ', 'ﾋ': 'ヒ', 'ﾌ': 'フ', 'ﾍ': 'ヘ', 'ﾎ': 'ホ',
-        'ﾏ': 'マ', 'ﾐ': 'ミ', 'ﾑ': 'ム', 'ﾒ': 'メ', 'ﾓ': 'モ',
-        'ﾔ': 'ヤ', 'ﾕ': 'ユ', 'ﾖ': 'ヨ', 'ﾗ': 'ラ', 'ﾘ': 'リ', 'ﾙ': 'ル', 'ﾚ': 'レ', 'ﾛ': 'ロ',
-        'ﾜ': 'ワ', 'ｦ': 'ヲ', 'ﾝ': 'ン', 'ｧ': 'ァ', 'ｨ': 'ィ', 'ｩ': 'ゥ', 'ｪ': 'ェ', 'ｫ': 'ォ',
-        'ｯ': 'ッ', 'ｬ': 'ャ', 'ｭ': 'ュ', 'ｮ': 'ョ', 'ｰ': 'ー', '､': '、', '｡': '。', '･': '・'
+        'ｶﾞ': 'ガ', 'ｷﾞ': 'ギ', 'ｸﾞ': 'グ', 'ｹﾞ': 'ゲ', 'ｺﾞ': 'ゴ', 'ｻﾞ': 'ザ', 'ｼﾞ': 'ジ', 'ｽﾞ': 'ズ', 'ｾﾞ': 'ゼ', 'ｿﾞ': 'ゾ',
+        'ﾀﾞ': 'ダ', 'ﾁﾞ': 'ヂ', 'ﾂﾞ': 'ヅ', 'ﾃﾞ': 'デ', 'ﾄﾞ': 'ド', 'ﾊﾞ': 'バ', 'ﾋﾞ': 'ビ', 'ﾌﾞ': 'ブ', 'ﾍﾞ': 'ベ', 'ﾎﾞ': 'ボ',
+        'ﾊﾟ': 'パ', 'ﾋﾟ': 'ピ', 'ﾌﾟ': 'プ', 'ﾍﾟ': 'ペ', 'ﾎﾟ': 'ポ', 'ｳﾞ': 'ヴ', 'ｱ': 'ア', 'ｲ': 'イ', 'ｳ': 'ウ', 'ｴ': 'エ', 'ｵ': 'オ',
+        'ｶ': 'カ', 'ｷ': 'キ', 'ｸ': 'ク', 'ｹ': 'ケ', 'ｺ': 'コ', 'ｻ': 'サ', 'ｼ': 'シ', 'ｽ': 'ス', 'ｾ': 'セ', 'ｿ': 'ソ',
+        'ﾀ': 'タ', 'ﾁ': 'チ', 'ﾂ': 'ツ', 'ﾃ': 'テ', 'ﾄ': 'ト', 'ﾅ': 'ナ', 'ﾆ': 'ニ', 'ﾇ': 'ヌ', 'ﾈ': 'ネ', 'ﾉ': 'ノ',
+        'ﾊ': 'ハ', 'ﾋ': 'ヒ', 'ﾌ': 'フ', 'ﾍ': 'ヘ', 'ﾎ': 'ホ', 'ﾏ': 'マ', 'ﾐ': 'ミ', 'ﾑ': 'ム', 'ﾒ': 'メ', 'ﾓ': 'モ',
+        'ﾔ': 'ヤ', 'ﾕ': 'ユ', 'ﾖ': 'ヨ', 'ﾗ': 'ラ', 'ﾘ': 'リ', 'ﾙ': 'ル', 'ﾚ': 'レ', 'ﾛ': 'ロ', 'ﾜ': 'ワ', 'ｦ': 'ヲ', 'ﾝ': 'ン',
+        'ｧ': 'ァ', 'ｨ': 'ィ', 'ｩ': 'ゥ', 'ｪ': 'ェ', 'ｫ': 'ォ', 'ｯ': 'ッ', 'ｬ': 'ャ', 'ｭ': 'ュ', 'ｮ': 'ョ', 'ｰ': 'ー', '､': '、', '｡': '。', '･': '・'
     };
     const hankakuKanaKeys = Object.keys(hankakuKanaMap).sort((a, b) => b.length - a.length);
     const hankakuRegExp = new RegExp('(' + hankakuKanaKeys.join('|') + ')', 'g');
@@ -228,13 +216,8 @@
         return zenkaku.replace(/[\u30A1-\u30FA]/g, match => String.fromCharCode(match.charCodeAt(0) - 0x60));
     }
 
-    // 電話番号の正規化
-    function normalizePhone(phone) {
-      return phone.replace(/[\s\-\(\)\.\u3000\uff0d]/g, '').replace(/^\+81/, '0');
-    }
-    function digitsOnly(phone) {
-      return phone.replace(/\D/g, '');
-    }
+    function normalizePhone(phone) { return phone.replace(/[\s\-\(\)\.\u3000\uff0d]/g, '').replace(/^\+81/, '0'); }
+    function digitsOnly(phone) { return phone.replace(/\D/g, ''); }
     function formatPhone(raw) {
       const d = digitsOnly(normalizePhone(raw));
       if (!d) return raw;
@@ -247,7 +230,6 @@
       return raw;
     }
 
-    // VCFパーサー
     function parseVCF(text) {
       const contacts = [];
       const unfolded = text.replace(/\r\n[ \t]/g, '').replace(/\r(?!\n)/g, '\r\n');
@@ -318,7 +300,6 @@
       return contacts;
     }
 
-    // データのクレンジング
     function cleanseContacts(raw) {
       const contacts = raw.map(c => ({
         name: c.name.trim(), lastName: c.lastName || '', firstName: c.firstName || '',
@@ -332,8 +313,7 @@
         c.phones = c.phones.filter(p => {
           const key = digitsOnly(p);
           if (!key || seen.has(key)) return false;
-          seen.add(key);
-          return true;
+          seen.add(key); return true;
         });
       });
 
@@ -363,17 +343,14 @@
       }
 
       return Array.from(map.values()).map(c => ({
-        ...c,
-        phones: c.phones.map(formatPhone),
+        ...c, phones: c.phones.map(formatPhone),
       }));
     }
 
-    // VCF生成
     function generateVCF(contacts) {
       let out = '';
       for (const c of contacts) {
         out += 'BEGIN:VCARD\r\nVERSION:3.0\r\n';
-        
         let finalLName = c.lastName || '';
         let finalFName = c.firstName || '';
         
@@ -393,36 +370,27 @@
         
         if (c.phones && c.phones.length > 0) {
             for (const p of c.phones) out += `TEL;WORK:${p}\r\n`;
-        } else {
-            out += `TEL;WORK:\r\n`;
-        }
+        } else { out += `TEL;WORK:\r\n`; }
         
         if (c.emails && c.emails.length > 0) {
             for (const e of c.emails) out += `EMAIL;HOME:${e}\r\n`;
-        } else {
-            out += `EMAIL;HOME:\r\n`;
-        }
+        } else { out += `EMAIL;HOME:\r\n`; }
         
         if (c.adrs && c.adrs.length > 0) {
             for (const a of c.adrs) out += `ADR;HOME:${a}\r\n`;
-        } else {
-            out += `ADR;HOME:\r\n`;
-        }
+        } else { out += `ADR;HOME:\r\n`; }
 
         out += 'X-CLASS:PUBLIC\r\nEND:VCARD\r\n';
       }
       return out;
     }
 
-    // ダウンロード処理
     function downloadVCF(vcfStr) {
-      const bom = '\uFEFF'; // 文字化け防止
+      const bom = '\uFEFF';
       const blob = new Blob([bom + vcfStr], { type: 'text/vcard;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      
-      // ダウンロードファイル名に日付を含める
       const d = new Date();
       const dateStr = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
       a.download = `contacts_cleaned_${dateStr}.vcf`;
@@ -435,37 +403,41 @@
 
     /* ========== App State & Rendering ========== */
     const App = {
-      state: 'idle', // 'idle' | 'processing' | 'done' | 'error'
-      originalCount: 0,
-      cleanedCount: 0,
-      errorMessage: '',
+      state: 'idle',
+      originalCount: 0, cleanedCount: 0, errorMessage: '',
 
       setState(newState) {
         this.state = newState;
         this.render();
       },
 
-      triggerFileInput() {
-        document.getElementById('file-input-vcf').click();
+      triggerFileInput() { document.getElementById('file-input-vcf').click(); },
+
+      async handleInstall() {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          deferredPrompt = null;
+          document.getElementById('btn-install-pwa').style.display = 'none';
+        }
       },
 
       handleFileUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
         
-        e.target.value = ''; // Reset input
+        e.target.value = '';
         this.setState('processing');
 
         const reader = new FileReader();
         reader.onload = (evt) => {
-          // 少しだけUIのローディングを見せる
           setTimeout(() => {
             try {
               const contacts = parseVCF(evt.target.result);
               if (contacts.length === 0) {
                 this.errorMessage = 'VCFファイルに連絡先が見つかりませんでした。ファイルの内容を確認してください。';
-                this.setState('error');
-                return;
+                this.setState('error'); return;
               }
               
               this.originalCount = contacts.length;
@@ -474,7 +446,6 @@
               
               const vcf = generateVCF(cleaned);
               downloadVCF(vcf);
-              
               this.setState('done');
             } catch (err) {
               console.error(err);
@@ -483,19 +454,12 @@
             }
           }, 600);
         };
-        
-        reader.onerror = () => {
-          this.errorMessage = 'ファイルの読み込みに失敗しました。';
-          this.setState('error');
-        };
-        
+        reader.onerror = () => { this.errorMessage = 'ファイルの読み込みに失敗しました。'; this.setState('error'); };
         reader.readAsText(file, 'utf-8');
       },
 
       reset() {
-        this.originalCount = 0;
-        this.cleanedCount = 0;
-        this.errorMessage = '';
+        this.originalCount = 0; this.cleanedCount = 0; this.errorMessage = '';
         this.setState('idle');
       },
 
@@ -509,9 +473,7 @@
               <div class="icon-container">
                 <div style="position: relative;">
                   <div class="icon-box slate shadow-sm">${icons.users}</div>
-                  <div class="anim-bounce-in delay-300" style="position: absolute; top: -8px; right: -8px;">
-                    ${icons.sparkles}
-                  </div>
+                  <div class="anim-bounce-in delay-300" style="position: absolute; top: -8px; right: -8px;">${icons.sparkles}</div>
                 </div>
               </div>
               
@@ -525,18 +487,16 @@
                 <span class="tag">重複統合</span>
                 <span class="tag">番号統一</span>
                 <span class="tag">ひらがな変換</span>
-                <span class="tag secure">${icons.shield} 完全オフライン動作</span>
               </div>
 
               <button class="btn btn-primary" onclick="App.triggerFileInput()">
-                ${icons.upload}
-                VCFファイルで一括処理
+                ${icons.upload} VCFファイルで一括処理
               </button>
 
               <div class="info-box">
                 <p class="info-box-title">${icons.shield} セキュリティについて</p>
                 <p class="info-box-desc">
-                  このファイルはインターネット通信を一切行わず、すべての処理をブラウザ内（ローカル）で完結させます。社外秘のアドレス帳データが外部に送信されることはないため、安全にご利用いただけます。
+                  アプリ上で処理が完結するため、アドレス帳データが外部サーバーに送信されることはありません。
                 </p>
               </div>
             </div>
@@ -545,9 +505,7 @@
         else if (this.state === 'processing') {
           html = `
             <div class="card anim-fade-in-up">
-              <div class="icon-container">
-                <div class="icon-box slate">${icons.loader}</div>
-              </div>
+              <div class="icon-container"><div class="icon-box slate">${icons.loader}</div></div>
               <h2>整理しています…</h2>
               <p class="subtitle">指定形式への変換・ひらがな処理中</p>
               <div style="width: 80%; margin: 0 auto; margin-bottom: 2rem;">
@@ -562,57 +520,33 @@
           html = `
             <div class="card anim-fade-in-up relative">
               <div class="confetti-container">
-                <div class="confetti c1"></div>
-                <div class="confetti c2"></div>
-                <div class="confetti c3"></div>
-                <div class="confetti c4"></div>
+                <div class="confetti c1"></div><div class="confetti c2"></div>
+                <div class="confetti c3"></div><div class="confetti c4"></div>
               </div>
-              <div class="icon-container">
-                <div class="icon-box emerald anim-bounce-in">${icons.check}</div>
-              </div>
+              <div class="icon-container"><div class="icon-box emerald anim-bounce-in">${icons.check}</div></div>
               <h2>整理が完了しました！</h2>
               
               <div class="stats-box">
-                <div class="stat-row">
-                  <span class="stat-label">元の連絡先</span>
-                  <span class="stat-value">${this.originalCount}<span class="stat-unit">件</span></span>
-                </div>
+                <div class="stat-row"><span class="stat-label">元の連絡先</span><span class="stat-value">${this.originalCount}<span class="stat-unit">件</span></span></div>
                 <div class="stat-divider"></div>
-                <div class="stat-row">
-                  <span class="stat-label">整理後</span>
-                  <span class="stat-value emerald">${this.cleanedCount}<span class="stat-unit emerald">件</span></span>
-                </div>
-                ${reduced > 0 ? `
-                <div class="stat-divider"></div>
-                <div class="stat-row">
-                  <span class="stat-label">削減</span>
-                  <span class="stat-value amber">-${reduced}<span class="stat-unit amber">件</span></span>
-                </div>
-                ` : ''}
+                <div class="stat-row"><span class="stat-label">整理後</span><span class="stat-value emerald">${this.cleanedCount}<span class="stat-unit emerald">件</span></span></div>
+                ${reduced > 0 ? `<div class="stat-divider"></div><div class="stat-row"><span class="stat-label">削減</span><span class="stat-value amber">-${reduced}<span class="stat-unit amber">件</span></span></div>` : ''}
               </div>
 
               <p class="subtitle" style="margin-bottom: 2rem;">
-                新しいVCFファイルがダウンロードされました 📥<br>
-                連絡先アプリでインポートしてください
+                新しいVCFファイルがダウンロードされました 📥<br>連絡先アプリでインポートしてください
               </p>
-
-              <button class="btn btn-secondary" onclick="App.reset()">
-                ${icons.refresh} もう一度整理する
-              </button>
+              <button class="btn btn-secondary" onclick="App.reset()">${icons.refresh} もう一度整理する</button>
             </div>
           `;
         }
         else if (this.state === 'error') {
           html = `
             <div class="card anim-fade-in-up">
-              <div class="icon-container">
-                <div class="icon-box rose anim-bounce-in">${icons.alert}</div>
-              </div>
+              <div class="icon-container"><div class="icon-box rose anim-bounce-in">${icons.alert}</div></div>
               <h2>エラーが発生しました</h2>
               <p class="subtitle">${this.errorMessage}</p>
-              <button class="btn btn-secondary" onclick="App.reset()">
-                ${icons.refresh} やり直す
-              </button>
+              <button class="btn btn-secondary" onclick="App.reset()">${icons.refresh} やり直す</button>
             </div>
           `;
         }
@@ -621,10 +555,7 @@
       }
     };
 
-    // 初期化
-    document.addEventListener('DOMContentLoaded', () => {
-      App.render();
-    });
+    document.addEventListener('DOMContentLoaded', () => { App.render(); });
   </script>
 </body>
 </html>
