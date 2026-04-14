@@ -1,18 +1,13 @@
 {
   "name": "連絡先クリーナー",
-  "short_name": "連絡先整理",
-  "description": "アドレス帳を自動整理してVCFでエクスポート",
+  "short_name": "連絡先クリーナー",
+  "description": "スマホのアドレス帳を自動整理。重複や表記ゆれを解消し、きれいなVCFファイルとしてエクスポート。",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#F8F9FA",
-  "theme_color": "#F8F9FA",
+  "background_color": "#0f172a",
+  "theme_color": "#6366f1",
+  "orientation": "portrait",
   "icons": [
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
